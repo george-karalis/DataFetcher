@@ -75,6 +75,7 @@ def main():
     for url in URLS:
         driver.get(url)
         picture_data = get_pictures_data(driver)
+        # breakpoint()
 
 
 if __name__ == "__main__":
