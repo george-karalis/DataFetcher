@@ -3,11 +3,12 @@ from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
+
 from tomato_scrapper.settings import OPTIONS, SERVICE
 from tomato_scrapper.urls import (
-    MOVIES_IN_CINEMAS,
-    MOVIES_AT_HOME,
     COMING_SOON,
+    MOVIES_AT_HOME,
+    MOVIES_IN_CINEMAS,
     TV_SERIES,
 )
 
