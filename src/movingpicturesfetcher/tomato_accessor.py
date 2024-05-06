@@ -1,5 +1,6 @@
-from datetime import datetime
+from datetime import date, datetime
 
+from movingpicturesdb.schemas import CreateMovingPicture
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
@@ -49,6 +50,11 @@ def clean_score(score: str) -> str:
     return score
 
 
+def clean_date(date_str: str) -> date:
+    """Clean Date to Populate DB Field."""
+    pass
+
+
 def get_pictures_score(picture: WebElement) -> tuple[str | None, str | None]:
     """
     Retrieve Audience and Critics Score
@@ -75,7 +81,6 @@ def main():
     for url in URLS:
         driver.get(url)
         picture_data = get_pictures_data(driver)
-        # breakpoint()
 
 
 if __name__ == "__main__":
