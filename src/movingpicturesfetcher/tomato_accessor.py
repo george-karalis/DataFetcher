@@ -2,11 +2,17 @@ from datetime import date, datetime
 
 from movingpicturesdb.schemas import CreateMovingPicture
 from selenium import webdriver
+from selenium.common.exceptions import (NoSuchElementException, ElementClickInterceptedException,)
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from tomato_scrapper.settings import OPTIONS, SERVICE
-from tomato_scrapper.urls import (
+from movingpicturesfetcher.elements import (
+    ATTRIBUTES,
+    CLASS_NAMES,
+    TAG_NAMES,
+)
+from movingpicturesfetcher.settings import OPTIONS, SERVICE
+from movingpicturesfetcher.urls import (
     COMING_SOON,
     MOVIES_AT_HOME,
     MOVIES_IN_CINEMAS,
@@ -16,22 +22,32 @@ from tomato_scrapper.urls import (
 URLS = [MOVIES_IN_CINEMAS, MOVIES_AT_HOME, COMING_SOON, TV_SERIES]
 
 
-def _has_video(picture: WebElement) -> bool:
-    tile = picture.find_element(By.TAG_NAME, "tile-dynamic")
-    is_video = tile.get_attribute("isvideo")
+def _has_video(tile: WebElement) -> bool:
+    """Finds if the Tile has a playable media.
+
+    Args:
+        picture (WebElement): The div containing the picture.
+
+    Returns:
+        bool: is the picture a video or not
+    """
+    is_video = tile.get_attribute(ATTRIBUTES["video_bool"])
     has_video = True if is_video == "true" else False
     return has_video
 
 
 def get_pictures_data(driver: webdriver.Chrome):
-    picture_tiles = driver.find_elements(By.CLASS_NAME, "js-tile-link")
-    for picture_tile in picture_tiles:
-        picture_data = picture_tile.text.split("\n")
-        if _has_video(picture_tile):
+    tiles = driver.find_element(
+        By.XPATH,
+        f"//{TAG_NAMES["tile"]}[@{ATTRIBUTES["video_bool"]}]"
+    )
+    for tile in tiles:
+        picture_data = tile.text.split("\n")
+        if _has_video(tile):
             picture_data = picture_data[1:]
 
         critics_score, audience_score, title, date = picture_data
-        url = picture_tile.get_attribute("href")
+        url = tile.get_attribute("href")
 
         content = {
             "title": title,
@@ -80,6 +96,11 @@ def main():
     driver = webdriver.Chrome(service=SERVICE, options=OPTIONS)
     for url in URLS:
         driver.get(url)
+        try:
+            reject_cookies = driver.find_element(By.ID, "onetrust-reject-all-handler")
+            reject_cookies.click()
+        except NoSuchElementException as exc:
+
         picture_data = get_pictures_data(driver)
 
 
