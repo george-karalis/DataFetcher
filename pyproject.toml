@@ -1,0 +1,19 @@
+[build-system]
+requires  = ["setuptools >= 69.5.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "moving-pictures-fetcher"
+version = "0.1"
+authors = [
+  { name="Giorgos Karalis", email="georgekaralis7@gmail.com"},
+]
+description = "It fetches all the moving picture data that will populate the db."
+readme = "README.md"
+requires-python= ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Debian",
+]
+
