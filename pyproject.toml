@@ -3,7 +3,7 @@ requires  = ["setuptools >= 69.5.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "moving-pictures-fetcher"
+name = "movingpicturesfetcher"
 version = "0.1"
 authors = [
   { name="Giorgos Karalis", email="georgekaralis7@gmail.com"},
