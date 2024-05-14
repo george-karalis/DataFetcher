@@ -7,7 +7,7 @@ ATTRIBUTES = {
     "next_page": "data-discoverygridsmanager='btnLoadMore'",
 }
 
-CLASS_NAMES = {"tile"}
+CLASS_NAMES = {"whole_tile": "js-tile-link"}
 
 
 IDS = {"reject_cookies": "onetrust-reject-all-handler"}
