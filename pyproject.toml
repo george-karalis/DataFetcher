@@ -17,3 +17,6 @@ classifiers = [
     "Operating System :: Debian",
 ]
 
+[[tool.mypy.overrides]]
+module = "movingpicturesdb"
+ignore_missing_imports = true

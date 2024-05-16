@@ -15,7 +15,9 @@ from movingpicturesfetcher.elements import (
 
 
 def tile_has_video(tile: WebElement) -> bool:
-    """Finds if the Tile has a playable media.
+    """
+    ## Finds if the Tile has a playable media.
+
     Parameters
     ----------
     tile
@@ -31,7 +33,8 @@ def tile_has_video(tile: WebElement) -> bool:
 
 
 def tile_get_url(tile: WebElement) -> str | None:
-    """Gets Moving Picture url using Tile.
+    """
+    ## Gets Moving Picture url using Tile.
 
     The URL can be part of an <a> tag inside the tile
     or be part of the ancestor <a> tag of the tile.
@@ -58,10 +61,12 @@ def tile_get_url(tile: WebElement) -> str | None:
     return mpic_url
 
 
-def clean_date(date_str: str, date_format: str = "%B %d %Y") -> date:
-    """Clean Date to Populate DB Field.
+# TODO: Add clean date for TV_SERIES URL
+def clean_date(date_str: str, date_format: str = "%b %d %Y") -> date:
+    """
+    ## Clean Date to Populate DB Field.
 
-    The Scrapped date field from the Rotten Tomatoes website is not in an ideal
+    ##The Scrapped date field from the Rotten Tomatoes website is not in an ideal
     format;
     date_str = 'Streaming May 10, 2024'u
     This function converts the above string to a datetime.date object
@@ -86,7 +91,8 @@ def clean_date(date_str: str, date_format: str = "%B %d %Y") -> date:
 
 
 def clean_score(score: str) -> int | None:
-    """Converts scrap score text to int.
+    """
+    ## Converts scrap score text to int.
 
     Parameters
     ----------
@@ -105,7 +111,8 @@ def clean_score(score: str) -> int | None:
 
 
 def turn_page(driver: webdriver.Chrome) -> None:
-    """Action: Goes to next page.
+    """
+    ## Action: Goes to next page.
 
     Click the button to load next page.
 
