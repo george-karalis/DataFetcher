@@ -1,57 +1,64 @@
-from datetime import datetime
+import time
+from typing import Iterator
 
+from movingpicturesdb.schemas import CreateMovingPicture
 from selenium import webdriver
+from selenium.common.exceptions import ElementNotInteractableException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from tomato_scrapper.settings import OPTIONS, SERVICE
-from tomato_scrapper.urls import (
+from movingpicturesfetcher.elements import (
+    ATTRIBUTES,
+    TAG_NAMES,
+)
+from movingpicturesfetcher.settings import OPTIONS, SERVICE
+from movingpicturesfetcher.urls import (
     COMING_SOON,
     MOVIES_AT_HOME,
     MOVIES_IN_CINEMAS,
-    TV_SERIES,
 )
 
-URLS = [MOVIES_IN_CINEMAS, MOVIES_AT_HOME, COMING_SOON, TV_SERIES]
+# TV_SERIES,
+from movingpicturesfetcher.utils import (
+    clean_date,
+    clean_score,
+    tile_get_url,
+    tile_has_video,
+    turn_page,
+)
+
+URLS = [MOVIES_IN_CINEMAS, MOVIES_AT_HOME, COMING_SOON]  # , TV_SERIES]
 
 
-def _has_video(picture: WebElement) -> bool:
-    tile = picture.find_element(By.TAG_NAME, "tile-dynamic")
-    is_video = tile.get_attribute("isvideo")
-    has_video = True if is_video == "true" else False
-    return has_video
+def get_pictures_data_generator(driver: webdriver.Chrome) -> Iterator:
+    """
+    ## Scans the last 30 moving pictures tiles.
 
+    Parameters
+    ----------
+    driver
+        The webdriver with the html code.
 
-def get_pictures_data(driver: webdriver.Chrome):
-    picture_tiles = driver.find_elements(By.CLASS_NAME, "js-tile-link")
-    for picture_tile in picture_tiles:
-        picture_data = picture_tile.text.split("\n")
-        if _has_video(picture_tile):
+    Yields
+    ------
+        * picture data in a tuple as str in the following order:
+          (critics_score, audience_score, title)
+        * moving picture rotten tomatoes url (mpic_url)
+    """
+    tiles = driver.find_elements(
+        By.XPATH, f"//{TAG_NAMES["tile"]}[@{ATTRIBUTES["video_bool"]}]"
+    )[-30:]
+    for tile in tiles:
+        picture_data = tile.text.split("\n")
+        if tile_has_video(tile):
             picture_data = picture_data[1:]
-
-        critics_score, audience_score, title, date = picture_data
-        url = picture_tile.get_attribute("href")
-
-        content = {
-            "title": title,
-            "critics_score": clean_score(critics_score),
-            "audience_score": clean_score(audience_score),
-            "date": date,
-            "url": url,
-        }
-        yield content
-
-
-def clean_score(score: str) -> str:
-    if score == "--":
-        return ""
-    score = score.strip("%")
-    return score
+        mpic_url = tile_get_url(tile)
+        yield picture_data, mpic_url
 
 
 def get_pictures_score(picture: WebElement) -> tuple[str | None, str | None]:
     """
-    Retrieve Audience and Critics Score
+    ## Retrieve Audience and Critics Score
 
     Parameters
     ----------
@@ -70,12 +77,59 @@ def get_pictures_score(picture: WebElement) -> tuple[str | None, str | None]:
     return critics_score, audience_score
 
 
+def moving_picture_generator(driver: webdriver.Chrome) -> Iterator:
+    """
+    ## Uses the picture tile to create a single CreateMovingPicture object.
+
+    Parameters
+    ----------
+    driver
+        Web driver to be passed in the scrapping data pipeline, which will return
+        the necessary picture data to create the Moving Picture object.
+
+    Yields
+    ------
+        Picture object.
+    """
+    pictures_data = get_pictures_data_generator(driver)
+    for mpic_data, mpic_url in pictures_data:
+        critics_score, audience_score, title, date = mpic_data
+        picture_object = CreateMovingPicture(
+            title=title,
+            released_date=clean_date(date),
+            rot_critics_score=clean_score(critics_score),
+            rot_audience_score=clean_score(audience_score),
+            url=mpic_url,
+        )
+        yield picture_object
+
+
+def parse_page(driver: webdriver.Chrome, page_url: str) -> None:
+    driver.get(page_url)
+    page_counter = 0  # FIXME: Scan all the pages instead of the first 20
+    while page_counter <= 20:
+        # FIXME: Call post API and add CreateMovingPicture object to the DB
+        movie_list = list(moving_picture_generator(driver))
+        print(
+            f"Page: {page_counter}\n---\n"
+            f"First Movie:\n{movie_list[0].title}\n---\n"
+            f"Last Movie: \n{movie_list[-1].title}"
+        )
+        try:
+            time.sleep(0.4)  # FIXME: To be removed
+            turn_page(driver)
+        except ElementNotInteractableException:
+            # Reached the end of pages
+            return
+        page_counter += 1
+
+
 def main():
     driver = webdriver.Chrome(service=SERVICE, options=OPTIONS)
-    for url in URLS:
-        driver.get(url)
-        picture_data = get_pictures_data(driver)
-        # breakpoint()
+    for page_url in URLS:
+        print(f"{'*'*19}\nParsing {page_url}\n{'*'*19}")
+        parse_page(driver, page_url)
+    driver.quit()
 
 
 if __name__ == "__main__":
