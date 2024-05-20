@@ -125,13 +125,14 @@ def turn_page(driver: webdriver.Chrome) -> None:
     driver
         The webdriver with the page.
     """
-    next_page_button = driver.find_element(
-        By.XPATH, f"//button[@{ATTRIBUTES["next_page"]}]"
-    )
+    reject_cookies = driver.find_element(By.ID, IDS["reject_cookies"])
+
     try:
-        next_page_button.click()
-    except ElementClickInterceptedException:
-        reject_cookies = driver.find_element(By.ID, IDS["reject_cookies"])
         reject_cookies.click()
+    except ElementClickInterceptedException:
+        print("There is no cookies dialog")
     finally:
+        next_page_button = driver.find_element(
+            By.XPATH, f"//button[@{ATTRIBUTES["next_page"]}]"
+        )
         next_page_button.click()
