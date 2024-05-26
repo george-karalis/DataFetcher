@@ -6,6 +6,7 @@ from movingpicturesdb.schemas import CreateMovingPicture
 from movingpicturesfetcher.tomato_accessor import (
     get_pictures_data_generator,
     moving_picture_generator,
+    parse_page,
 )
 from selenium.webdriver.common.by import By
 
@@ -47,9 +48,6 @@ class TestGetPictureDateGenerator:
         assert expected_mpic_url == result_mpic_url
 
 
-# @mock.patch("movingpicturesfetcher.tomato_accessor.webdriver.Chrome")
-
-
 class TestMovingPictureGenerator:
     """
     ## Tests `moving_picture_generator` function.
@@ -79,3 +77,13 @@ class TestMovingPictureGenerator:
 
         mock_pic_data_gen.assert_called_once_with(mock_driver)
         assert expected_result == result
+
+
+class TestParsePage:
+    """
+    ## Test `parse_page` function.
+    """
+
+    @mock.patch("movingpicturesfetcher.tomato_accessor.webdriver.Chrome")
+    def test_parse_page(self, mock_driver):
+        pass
