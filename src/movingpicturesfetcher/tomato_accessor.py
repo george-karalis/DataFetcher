@@ -1,6 +1,7 @@
 import time
 from typing import Iterator
 
+import deprecation
 from movingpicturesdb.schemas import CreateMovingPicture
 from selenium import webdriver
 from selenium.common.exceptions import ElementNotInteractableException
@@ -56,6 +57,11 @@ def get_pictures_data_generator(driver: webdriver.Chrome) -> Iterator:
         yield picture_data, mpic_url
 
 
+@deprecation.deprecated(
+    deprecated_in="0.1",
+    removed_in="1.0",
+    details="Use the `get_pictures_data_generator` function instead",
+)
 def get_pictures_score(picture: WebElement) -> tuple[str | None, str | None]:
     """
     ## Retrieve Audience and Critics Score
