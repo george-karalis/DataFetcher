@@ -1,9 +1,11 @@
+from datetime import date
 from unittest import mock
 
 import pytest
+from movingpicturesdb.schemas import CreateMovingPicture
 from movingpicturesfetcher.tomato_accessor import (
     get_pictures_data_generator,
-    get_pictures_score,
+    moving_picture_generator,
 )
 from selenium.webdriver.common.by import By
 
@@ -43,3 +45,37 @@ class TestGetPictureDateGenerator:
         mock_get_url.assert_called_once_with(mock_tile)
         assert set(expected_pic_data) == set(result_pic_data)
         assert expected_mpic_url == result_mpic_url
+
+
+# @mock.patch("movingpicturesfetcher.tomato_accessor.webdriver.Chrome")
+
+
+class TestMovingPictureGenerator:
+    """
+    ## Tests `moving_picture_generator` function.
+    """
+
+    @mock.patch("movingpicturesfetcher.tomato_accessor.get_pictures_data_generator")
+    @mock.patch(
+        "movingpicturesfetcher.tomato_accessor.webdriver.remote.webelement.WebElement"
+    )
+    def test_moving_picture_generator(self, mock_driver, mock_pic_data_gen):
+        mock_pic_data_gen.return_value = (
+            (
+                ["81%", "86%", "The Fall Guy", "Streaming May 21, 2024"],
+                "https://www.rottentomatoes.com/m/the_fall_guy_2024",
+            ),
+        )
+        expected_result = CreateMovingPicture(
+            title="The Fall Guy",
+            released_date=date(2024, 5, 21),
+            rot_critics_score=81,
+            rot_audience_score=86,
+            url="https://www.rottentomatoes.com/m/the_fall_guy_2024",
+        )
+
+        pic_obj_gen = moving_picture_generator(mock_driver)
+        result = next(pic_obj_gen)
+
+        mock_pic_data_gen.assert_called_once_with(mock_driver)
+        assert expected_result == result
